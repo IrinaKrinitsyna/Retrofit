@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -16,20 +19,32 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
+    protected ArrayAdapter<String> adapter;
+    protected ListView listview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
+
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getreport();
+                adapter=new ArrayAdapter<String>(MainActivity.this,R.layout.post_item);
+                listview=(ListView)findViewById(R.id.listview);
+                listview.setAdapter(adapter);
+                adapter.clear();
+
+
+                EditText Text = (EditText) findViewById(R.id.edittext);
+                String User = Text.getText().toString();
+                getreport(User);
+
             }
         });
     }
 
-    private void getreport() {
+    private void getreport(String User) {
     /* некоторое шаманство, которое мы не пониммаем >>>>> */
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.github.com/")
@@ -38,15 +53,31 @@ public class MainActivity extends AppCompatActivity {
         GitHubService service = retrofit.create(GitHubService.class);
         /* некоторое шаманство закончилось, мы получили объект, позволяющий делать http-запросы */
 
-        Call<List<Repo>> repos = service.listRepos("IrinaKrinitsyna");
+        Call<List<Repo>> repos = service.listRepos(User);
         Toast.makeText(this, "Запрос начался", Toast.LENGTH_SHORT);
         repos.enqueue(new Callback<List<Repo>>() {
                          @Override
                          public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
                              if (response.isSuccessful()) {
-                                 Toast.makeText(MainActivity.this, response.body().get(1).name, Toast.LENGTH_SHORT).show();
+
+                                 adapter=new ArrayAdapter<String>(MainActivity.this,R.layout.post_item);
+                                 listview=(ListView)findViewById(R.id.listview);
+                                 listview.setAdapter(adapter);
+
+                                 try
+                                 {
+                                     for(int i = 0; i < 100; i++)
+                                     {
+                                         adapter.add(response.body().get(i).full_name +"\n" +response.body().get(i).created_at +" / "+  response.body().get(i).updated_at);
+                                     }
+                                 }
+                                 catch (Exception e)//ArrayIndexOutOfBoundsException
+                                 {}
+
+                                 //Toast.makeText(MainActivity.this, response.body().get(1).name, Toast.LENGTH_SHORT).show();
                                  // tasks available
                              } else {
+                                 Toast.makeText(MainActivity.this, "Не найдено", Toast.LENGTH_SHORT).show();
                                  // error response, no access to resource?
                              }
                          }
