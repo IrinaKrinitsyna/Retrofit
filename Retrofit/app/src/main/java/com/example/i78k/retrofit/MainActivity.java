@@ -8,6 +8,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.i78k.retrofit.model.Room;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -37,10 +40,23 @@ public class MainActivity extends AppCompatActivity {
 
                 EditText Text = (EditText) findViewById(R.id.edittext);
                 String User = Text.getText().toString();
-                getreport(User);
+                //getreport(User);
+
+                shourooms(createDemodata());
             }
         });
     }
+    public List <Room> createDemodata () {
+        List <Room> Rooms = new ArrayList<>();
+
+
+        for ( int i=0; i<5; i++)
+        {
+            Rooms.add(new Room("room "+i));
+        }
+        return Rooms;
+    }
+
 
     private void getreport(String User) {
         /* некоторое шаманство, которое мы не пониммаем >>>>> */
@@ -75,5 +91,15 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void shourooms(List <Room> rooms) {
+        adapter = new ArrayAdapter<>(MainActivity.this, R.layout.post_item);
+        listview = (ListView) findViewById(R.id.listview);
+        listview.setAdapter(adapter);
+
+        for (int i = 0; i < rooms.size(); i++) {
+            adapter.add(rooms.get(i).name ); //TODO вывести список времен
+        }
     }
 }
